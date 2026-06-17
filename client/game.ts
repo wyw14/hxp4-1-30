@@ -20,6 +20,7 @@ class ColorMemoryGame {
   private readonly currentLevelEl: HTMLElement;
   private readonly highScoreEl: HTMLElement;
   private readonly gameStatusEl: HTMLElement;
+  private readonly hintEl: HTMLElement;
 
   private readonly lightOnDuration: number = 600;
   private readonly lightOffDuration: number = 300;
@@ -30,6 +31,7 @@ class ColorMemoryGame {
     this.currentLevelEl = document.getElementById('current-level') as HTMLElement;
     this.highScoreEl = document.getElementById('high-score') as HTMLElement;
     this.gameStatusEl = document.getElementById('game-status') as HTMLElement;
+    this.hintEl = document.getElementById('game-hint') as HTMLElement;
 
     this.init();
   }
@@ -100,6 +102,7 @@ class ColorMemoryGame {
     this.level++;
     this.currentLevelEl.textContent = this.level.toString();
     this.playerIndex = 0;
+    this.hideHint();
 
     const randomColor = COLORS[Math.floor(Math.random() * COLORS.length)];
     this.sequence.push(randomColor);
@@ -159,6 +162,8 @@ class ColorMemoryGame {
         this.setButtonsDisabled(true);
         await this.delay(1000);
         this.nextRound();
+      } else {
+        this.updateHint();
       }
     } else {
       button?.classList.add('wrong');
@@ -173,6 +178,7 @@ class ColorMemoryGame {
     this.isPlaying = false;
     this.setButtonsDisabled(true);
     this.startBtn.disabled = false;
+    this.hideHint();
 
     const finalScore = this.level - 1;
     this.showStatus(`游戏结束！你完成了 ${finalScore} 关`, 'gameover');
@@ -194,6 +200,23 @@ class ColorMemoryGame {
     if (type) {
       this.gameStatusEl.classList.add(type);
     }
+  }
+
+  private updateHint(): void {
+    const remainingSteps = this.sequence.length - this.playerIndex;
+    const accuracy = Math.round((this.playerIndex / this.sequence.length) * 100);
+
+    if (remainingSteps <= 2 && remainingSteps > 0) {
+      this.hintEl.textContent = `剩余 ${remainingSteps} 步 · 当前准确率 ${accuracy}%`;
+      this.hintEl.classList.add('show');
+    } else {
+      this.hideHint();
+    }
+  }
+
+  private hideHint(): void {
+    this.hintEl.classList.remove('show');
+    this.hintEl.textContent = '';
   }
 
   private delay(ms: number): Promise<void> {
